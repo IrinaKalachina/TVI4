@@ -42,56 +42,74 @@ void create_arr(int len, int N, int tournir) {
     }
     cout << "\t" << best_fitness << endl;
 
-    int *tournir_list = new int[len]();
+    // Селекция
+    int *tournir_list = new int[2*N]();
     int k, p = len+10;
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < 2*N; i++) {
         do{
-            k = rand() % (len-1);
-            p = rand() % (len-1);
+            k = rand() % (N-1);
+            p = rand() % (N-1);
         } while (p == k);
         if (fitness[k] >= fitness[p]){
             tournir_list[i]=k;
         }
         else{tournir_list[i]=p;}
-        /*турнирная селекция*/
     }
     //вывод массива победителей турнирной селекции
-    /*for (int i = 0; i < N; i++) {
+    /*for (int i = 0; i < 2*N; i++) {
         cout << tournir_list[i] << " ";
     }
     cout << endl;*/
 
-    // Селекция
-    int** selection = new int*[N];
-    for (int i = 0; i < N; i++) {
-        selection[i] = new int[len];
+    // Создание массива после селекции
+    int** selection = new int*[2 * N];
+    for (int i = 0; i < 2 * N; i++) {
+        selection[i] = new int[len]();
         int a = tournir_list[i];
         for (int j = 0; j < len; j++) {
             selection[i][j] = population[a][j];
         }
     }
-    for (int i = 0; i < N; i++) {
+
+    for (int i = 0; i < 2 * N; i++) {
         for (int j = 0; j < len; j++) {
             cout << selection[i][j] << " ";
         }
         cout << endl;
     }
 
+    //Скрещивание
+    /*int* scr_index = new int[(N/2)-1]();
+    for (int i = 0; i < (N/2); i++) {
+        int scr = rand() % (len-1)+1;
+        scr_index[i] = scr; // Массив индексов для скрещивания
+        cout << scr_index[i] << " ";
+    }
+    //int** offspring = new int*[N];
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < len; j++) {
+
+        }
+    }*/
+
     // Освобождение памяти
     for (int i = 0; i < N; i++) {
         delete[] population[i];
+    }
+    for (int i = 0; i < 2 * N; i++) {
         delete[] selection[i];
     }
     delete[] population;
     delete[] fitness;
     delete[] tournir_list;
     delete[] selection;
+    //delete[] scr_index;
 }
 
 int main() {
     SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);
-    int N = 10; // Количество строк
+    int N = 5; // Количество строк
     int len = 8; // Длина каждой строки
     int tournir = 2; // Количество индивидов, принимающих участие в турнире
     create_arr(len, N, tournir);
