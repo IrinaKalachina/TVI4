@@ -56,10 +56,11 @@ void create_arr(int len, int N, int tournir) {
         else{tournir_list[i]=p;}
     }
     //вывод массива победителей турнирной селекции
-    /*for (int i = 0; i < 2*N; i++) {
+    cout << "Селекция"<< endl;
+     for (int i = 0; i < 2*N; i++) {
         cout << tournir_list[i] << " ";
     }
-    cout << endl;*/
+    cout << endl;
 
     // Создание массива после селекции
     int** selection = new int*[2 * N];
@@ -77,33 +78,48 @@ void create_arr(int len, int N, int tournir) {
         }
         cout << endl;
     }
+    cout << endl;
 
     //Скрещивание
-    /*int* scr_index = new int[(N/2)-1]();
-    for (int i = 0; i < (N/2); i++) {
+    int* scr_index = new int[N]();
+    for (int i = 0; i < N; i++) {
         int scr = rand() % (len-1)+1;
         scr_index[i] = scr; // Массив индексов для скрещивания
         cout << scr_index[i] << " ";
     }
-    //int** offspring = new int*[N];
+    cout << endl;
+    int** offspring = new int*[N];
+    for (int i = 0; i < N; i++) {
+        offspring[i] = new int[len];
+    }
+    for (int i = 0; i < N;i++) {
+        for (int j = 0; j < scr_index[i]; j++) {
+            offspring[i][j] = selection[2*i][j];
+        }
+        for (int j = scr_index[i]; j < len; j++) {
+            offspring[i][j] = selection[2*i+1][j];
+        }
+    }
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
-
+            cout << offspring[i][j] << " ";
         }
-    }*/
+        cout << endl;
+    }
+
 
     // Освобождение памяти
     for (int i = 0; i < N; i++) {
         delete[] population[i];
-    }
-    for (int i = 0; i < 2 * N; i++) {
         delete[] selection[i];
+        delete[] offspring[i];
     }
     delete[] population;
     delete[] fitness;
     delete[] tournir_list;
     delete[] selection;
-    //delete[] scr_index;
+    delete[] scr_index;
+    delete[] offspring;
 }
 
 int main() {
