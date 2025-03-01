@@ -78,6 +78,7 @@ void one_offspring(int N, int len, int**& selec, int**& offsp) { //одното�
 }
 
 void two_offspring(int N, int len, int**& selec, int**& offsp) { //двухточечное скрещивание
+    //cout << "Скрещивание"<< endl;
     int** scr_index = new int*[N]; // Массив индексов для скрещивания
 
     for (int i = 0; i < N; i++) {
@@ -114,6 +115,23 @@ void two_offspring(int N, int len, int**& selec, int**& offsp) { //двухто�
     delete[] scr_index;
 }
 
+void uniform_offspring(int N, int len, int**& selec, int**& offsp) { // Равномерное скрещивание
+    //cout << "Скрещивание"<< endl;
+    for (int i = 0; i < N; i++) {
+        offsp[i] = new int[len];
+    }
+    for (int i = 0; i < N;i++) {
+        for (int j = 0; j < len; j++) {
+            if (rand() % (2) == 0) {
+                offsp[i][j] = selec[2*i][j];
+            }
+            else {
+                offsp[i][j] = selec[2*i+1][j];
+            }
+        }
+    }
+}
+
 void weak_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int& best) {
     //cout << "Мутация"<< endl;
     for (int i = 0; i < N; i++) {
@@ -124,7 +142,49 @@ void weak_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int&
     }
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
+            if (rand() % (3*len) == 0) { // Вероятность 1/3*len
+                mut[i][j] = 1 - mut[i][j]; // Инверсия гена
+            }
+            mut_fit[i] += mut[i][j];
+        }
+        if (mut_fit[i] > mut_fit[best]) {
+            best = i;
+        }
+    }
+}
+
+void average_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int& best) {
+    //cout << "Мутация"<< endl;
+    for (int i = 0; i < N; i++) {
+        mut[i] = new int[len];
+        for (int j = 0; j < len; j++) {
+            mut[i][j] = offsp[i][j]; // Сначала копируем
+        }
+    }
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < len; j++) {
             if (rand() % len == 0) { // Вероятность 1/len
+                mut[i][j] = 1 - mut[i][j]; // Инверсия гена
+            }
+            mut_fit[i] += mut[i][j];
+        }
+        if (mut_fit[i] > mut_fit[best]) {
+            best = i;
+        }
+    }
+}
+
+void strong_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int& best) {
+    //cout << "Мутация"<< endl;
+    for (int i = 0; i < N; i++) {
+        mut[i] = new int[len];
+        for (int j = 0; j < len; j++) {
+            mut[i][j] = offsp[i][j]; // Сначала копируем
+        }
+    }
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < len; j++) {
+            if (min(3*(rand() % len), 1) == 0) { // Вероятность 3/len
                 mut[i][j] = 1 - mut[i][j]; // Инверсия гена
             }
             mut_fit[i] += mut[i][j];
@@ -156,6 +216,8 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
             int** offspring = new int*[N];
             one_offspring(N,len,selection,offspring);
             //two_offspring(N,len,selection,offspring);
+            //uniform_offspring(N,len,selection,offspring);
+
             /*for (int i = 0; i < N; i++) {
                 for (int j = 0; j < len; j++) {
                     cout << offspring[i][j] << " ";
@@ -169,7 +231,9 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
             int** mutation = new int*[N];
             int* mutation_fitness = new int[N]();
 
-            weak_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
+            //average_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
+            //weak_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
+            strong_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
 
             for (int i = 0; i < N; i++) {
                 for (int j = 0; j < len; j++) {
@@ -226,7 +290,7 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
 int main() {
     SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);
-    int N = 5;    // Количество индивидов
+    int N = 10;    // Количество индивидов
     int len = 8;  // Длина генома
     int tournir = 2; // Размер турнира
     if (N <= tournir) {
