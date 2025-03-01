@@ -20,6 +20,39 @@ void create_population(int N, int len, int**& popul, int*& fitness, int& best) {
     }
 }
 
+void proportional_selection(int N, int len, int**& popul, int**& selec, int*& fitness) { // Пропорциональная селекция
+    int total_fitness = 0;
+    for (int i = 0; i < N; i++) {
+        total_fitness += fitness[i];
+    }
+
+    double* probabilities = new double[N];
+    for (int i = 0; i < N; i++) {
+        probabilities[i] = (double)fitness[i] / total_fitness;
+    }
+
+    for (int i = 0; i < 2 * N; i++) {
+        double r = (double)rand() / RAND_MAX;
+        double cumulative = 0.0;
+        int selected = 0;
+
+        for (int j = 0; j < N; j++) {
+            cumulative += probabilities[j];
+            if (r <= cumulative) {
+                selected = j;
+                break;
+            }
+        }
+
+        selec[i] = new int[len];
+        for (int j = 0; j < len; j++) {
+            selec[i][j] = popul[selected][j];
+        }
+    }
+
+    delete[] probabilities;
+}
+
 void tournir_selection(int N, int len, int**& popul, int**& selec, int*& fitness, int tournir) {
     int *tournir_list = new int[2 * N]();
 
@@ -202,6 +235,7 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
             cout << "ЭПОХА: " << epoch_count << endl;
             // Селекция
             int** selection = new int*[2 * N];
+            proportional_selection(N,len, population, selection, fitness);
             tournir_selection(N,len, population, selection,fitness, tournir);
 
             /*for (int i = 0; i < 2 * N; i++) {
