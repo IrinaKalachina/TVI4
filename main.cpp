@@ -53,6 +53,44 @@ void proportional_selection(int N, int len, int**& popul, int**& selec, int*& fi
     delete[] probabilities;
 }
 
+void rank_selection(int N, int len, int**& popul, int**& selec, int*& fitness) { // Ранговая селекция
+    int* indices = new int[N];
+    for (int i = 0; i < N; i++) {
+        indices[i] = i;
+    }
+
+    sort(indices, indices + N, [&](int a, int b) { return fitness[a] > fitness[b]; });
+
+    double* probabilities = new double[N];
+    double total_rank = N * (N + 1) / 2.0;
+
+    for (int i = 0; i < N; i++) {
+        probabilities[i] = (double)(N - i) / total_rank;
+    }
+
+    for (int i = 0; i < 2 * N; i++) {
+        double r = (double)rand() / RAND_MAX;
+        double cumulative = 0.0;
+        int selected = 0;
+
+        for (int j = 0; j < N; j++) {
+            cumulative += probabilities[j];
+            if (r <= cumulative) {
+                selected = indices[j];
+                break;
+            }
+        }
+
+        selec[i] = new int[len];
+        for (int j = 0; j < len; j++) {
+            selec[i][j] = popul[selected][j];
+        }
+    }
+
+    delete[] indices;
+    delete[] probabilities;
+}
+
 void tournir_selection(int N, int len, int**& popul, int**& selec, int*& fitness, int tournir) {
     int *tournir_list = new int[2 * N]();
 
@@ -235,7 +273,8 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
             cout << "ЭПОХА: " << epoch_count << endl;
             // Селекция
             int** selection = new int*[2 * N];
-            proportional_selection(N,len, population, selection, fitness);
+            //proportional_selection(N,len, population, selection, fitness);
+            //rank_selection(N,len, population, selection,fitness);
             tournir_selection(N,len, population, selection,fitness, tournir);
 
             /*for (int i = 0; i < 2 * N; i++) {
@@ -266,8 +305,8 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
             int* mutation_fitness = new int[N]();
 
             //average_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
-            //weak_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
-            strong_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
+            weak_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
+            //strong_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
 
             for (int i = 0; i < N; i++) {
                 for (int j = 0; j < len; j++) {
