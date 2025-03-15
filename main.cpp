@@ -5,22 +5,30 @@
 #include <ctime>
 using namespace std;
 
+// Новая функция для вычисления пригодности
+int calculate_fitness(int* individual, int len) {
+    int fit = 0;
+    for (int j = 0; j < len; j++) {
+        fit += individual[j];
+    }
+    return fit;
+}
+
 void create_population(int N, int len, int**& popul, int*& fitness, int& best) {
     srand(time(0));
     for (int i = 0; i < N; i++) {
         popul[i] = new int[len];
         for (int j = 0; j < len; j++) {
             popul[i][j] = rand() % 2;
-            fitness[i] += popul[i][j];
         }
-        // Определение индекса индивида с наибольшей функцией пригодности
+        fitness[i] = calculate_fitness(popul[i], len);
         if (fitness[i] > fitness[best]) {
             best = i;
         }
     }
 }
 
-void proportional_selection(int N, int len, int**& popul, int**& selec, int*& fitness) { // Пропорциональная селекция
+void proportional_selection(int N, int len, int**& popul, int**& selec, int*& fitness) {
     int total_fitness = 0;
     for (int i = 0; i < N; i++) {
         total_fitness += fitness[i];
@@ -53,7 +61,7 @@ void proportional_selection(int N, int len, int**& popul, int**& selec, int*& fi
     delete[] probabilities;
 }
 
-void rank_selection(int N, int len, int**& popul, int**& selec, int*& fitness) { // Ранговая селекция
+void rank_selection(int N, int len, int**& popul, int**& selec, int*& fitness) {
     int* indices = new int[N];
     for (int i = 0; i < N; i++) {
         indices[i] = i;
@@ -95,9 +103,9 @@ void tournir_selection(int N, int len, int**& popul, int**& selec, int*& fitness
     int *tournir_list = new int[2 * N]();
 
     for (int i = 0; i < 2 * N; i++) {
-        int first = rand() % N; // Выбираем первого участника
+        int first = rand() % N;
 
-        for (int t = 1; t < tournir; t++) { // Выбираем оставшихся участников турнира
+        for (int t = 1; t < tournir; t++) {
             int competitor = rand() % N;
             if (fitness[competitor] > fitness[first]) {
                 first = competitor;
@@ -106,13 +114,6 @@ void tournir_selection(int N, int len, int**& popul, int**& selec, int*& fitness
 
         tournir_list[i] = first;
     }
-
-    //вывод массива победителей турнирной селекции
-    /*cout << "Турнирная селекция"<< endl;
-    for (int i = 0; i < 2*N; i++) {
-        cout << tournir_list[i] << " ";
-    }
-    cout << endl;*/
 
     for (int i = 0; i < 2 * N; i++) {
         selec[i] = new int[len]();
@@ -125,13 +126,11 @@ void tournir_selection(int N, int len, int**& popul, int**& selec, int*& fitness
     delete[] tournir_list;
 }
 
-void one_offspring(int N, int len, int**& selec, int**& offsp) { //одноточечное скрещивание
-    //cout << "Скрещивание"<< endl;
+void one_offspring(int N, int len, int**& selec, int**& offsp) {
     int* scr_index = new int[N]();
     for (int i = 0; i < N; i++) {
         int scr = rand() % (len-1)+1;
-        scr_index[i] = scr; // Массив индексов для скрещивания
-        //cout << scr_index[i] << " ";
+        scr_index[i] = scr;
     }
     cout << endl;
     for (int i = 0; i < N; i++) {
@@ -148,9 +147,8 @@ void one_offspring(int N, int len, int**& selec, int**& offsp) { //одното�
     delete[] scr_index;
 }
 
-void two_offspring(int N, int len, int**& selec, int**& offsp) { //двухточечное скрещивание
-    //cout << "Скрещивание"<< endl;
-    int** scr_index = new int*[N]; // Массив индексов для скрещивания
+void two_offspring(int N, int len, int**& selec, int**& offsp) {
+    int** scr_index = new int*[N];
 
     for (int i = 0; i < N; i++) {
         scr_index[i] = new int[2];
@@ -186,14 +184,13 @@ void two_offspring(int N, int len, int**& selec, int**& offsp) { //двухто�
     delete[] scr_index;
 }
 
-void uniform_offspring(int N, int len, int**& selec, int**& offsp) { // Равномерное скрещивание
-    //cout << "Скрещивание"<< endl;
+void uniform_offspring(int N, int len, int**& selec, int**& offsp) {
     for (int i = 0; i < N; i++) {
         offsp[i] = new int[len];
     }
     for (int i = 0; i < N;i++) {
         for (int j = 0; j < len; j++) {
-            if (rand() % (2) == 0) {
+            if (rand() % 2 == 0) {
                 offsp[i][j] = selec[2*i][j];
             }
             else {
@@ -204,20 +201,19 @@ void uniform_offspring(int N, int len, int**& selec, int**& offsp) { // Равн
 }
 
 void weak_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int& best) {
-    //cout << "Мутация"<< endl;
     for (int i = 0; i < N; i++) {
         mut[i] = new int[len];
         for (int j = 0; j < len; j++) {
-            mut[i][j] = offsp[i][j]; // Сначала копируем
+            mut[i][j] = offsp[i][j];
         }
     }
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
-            if (rand() % (3*len) == 0) { // Вероятность 1/3*len
-                mut[i][j] = 1 - mut[i][j]; // Инверсия гена
+            if (rand() % (3*len) == 0) {
+                mut[i][j] = 1 - mut[i][j];
             }
-            mut_fit[i] += mut[i][j];
         }
+        mut_fit[i] = calculate_fitness(mut[i], len);
         if (mut_fit[i] > mut_fit[best]) {
             best = i;
         }
@@ -225,20 +221,19 @@ void weak_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int&
 }
 
 void average_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int& best) {
-    //cout << "Мутация"<< endl;
     for (int i = 0; i < N; i++) {
         mut[i] = new int[len];
         for (int j = 0; j < len; j++) {
-            mut[i][j] = offsp[i][j]; // Сначала копируем
+            mut[i][j] = offsp[i][j];
         }
     }
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
-            if (rand() % len == 0) { // Вероятность 1/len
-                mut[i][j] = 1 - mut[i][j]; // Инверсия гена
+            if (rand() % len == 0) {
+                mut[i][j] = 1 - mut[i][j];
             }
-            mut_fit[i] += mut[i][j];
         }
+        mut_fit[i] = calculate_fitness(mut[i], len);
         if (mut_fit[i] > mut_fit[best]) {
             best = i;
         }
@@ -246,20 +241,19 @@ void average_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, i
 }
 
 void strong_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, int& best) {
-    //cout << "Мутация"<< endl;
     for (int i = 0; i < N; i++) {
         mut[i] = new int[len];
         for (int j = 0; j < len; j++) {
-            mut[i][j] = offsp[i][j]; // Сначала копируем
+            mut[i][j] = offsp[i][j];
         }
     }
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
-            if (min(3*(rand() % len), 1) == 0) { // Вероятность 3/len
-                mut[i][j] = 1 - mut[i][j]; // Инверсия гена
+            if (min(3*(rand() % len), 1) == 0) {
+                mut[i][j] = 1 - mut[i][j];
             }
-            mut_fit[i] += mut[i][j];
         }
+        mut_fit[i] = calculate_fitness(mut[i], len);
         if (mut_fit[i] > mut_fit[best]) {
             best = i;
         }
@@ -268,46 +262,38 @@ void strong_mutation(int N, int len, int**& offsp, int**& mut, int*& mut_fit, in
 
 void create_new_population(int N, int len, int**& popul, int**& mut, int*& new_fit, int& best) {
     int** massiv = new int*[2 * N];
-    int* fite = new int[2 * N]();  // Инициализация нулями
+    int* fite = new int[2 * N]();
 
-    // Заполнение massiv и fite
     for (int i = 0; i < 2 * N; i++) {
         massiv[i] = new int[len];
-        fite[i] = 0;  // Явная инициализация
-
         for (int j = 0; j < len; j++) {
             if (i < N) {
                 massiv[i][j] = popul[i][j];
-                fite[i] += popul[i][j];
             } else {
                 massiv[i][j] = mut[i - N][j];
-                fite[i] += mut[i - N][j];
             }
         }
+        fite[i] = calculate_fitness(massiv[i], len);
     }
 
-    // Сортировка пузырьком по убыванию
     for (int i = 0; i < 2 * N - 1; i++) {
         for (int j = 0; j < 2 * N - i - 1; j++) {
             if (fite[j] < fite[j + 1]) {
-                swap(fite[j], fite[j + 1]);  // Меняем местами значения в fite
-                swap(massiv[j], massiv[j + 1]);  // Меняем местами указатели на массивы
+                swap(fite[j], fite[j + 1]);
+                swap(massiv[j], massiv[j + 1]);
             }
         }
     }
 
-    // Обновление popul новыми лучшими значениями
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
-            popul[i][j] = massiv[i][j];  // Перезапись значений
+            popul[i][j] = massiv[i][j];
         }
-        new_fit[i] = fite[i];  // Запись в новый массив пригодности
+        new_fit[i] = fite[i];
     }
 
-    // Лучший результат
-    best = new_fit[0];
+    best = 0;  // Индекс лучшего теперь всегда 0 после сортировки
 
-    // Освобождение памяти
     for (int i = 0; i < 2 * N; i++) {
         delete[] massiv[i];
     }
@@ -317,44 +303,18 @@ void create_new_population(int N, int len, int**& popul, int**& mut, int*& new_f
 
 void Population(int N, int len, int**& population, int*& fitness, int& best_index, int tournir) {
     int epoch_count = 1;
-    while (best_index != len) {
+    while (fitness[best_index] != len) {  // Изменено условие на использование значения fitness
         cout << "ПОКОЛЕНИЕ: " << epoch_count << endl;
-        // Селекция
         int** selection = new int*[2 * N];
-        //proportional_selection(N,len, population, selection, fitness);
-        //rank_selection(N,len, population, selection,fitness);
         tournir_selection(N,len, population, selection,fitness, tournir);
 
-        /*for (int i = 0; i < 2 * N; i++) {
-            for (int j = 0; j < len; j++) {
-                cout << selection[i][j] << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;*/
-
-        //Скрещивание
         int** offspring = new int*[N];
         one_offspring(N,len,selection,offspring);
-        //two_offspring(N,len,selection,offspring);
-        //uniform_offspring(N,len,selection,offspring);
 
-        /*for (int i = 0; i < N; i++) {
-            for (int j = 0; j < len; j++) {
-                cout << offspring[i][j] << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;*/
-
-        // Мутация
-        int bestIndex = 0; // Индекс лучшего индивида
+        int bestIndex = 0;
         int** mutation = new int*[N];
         int* mutation_fitness = new int[N]();
-
-        //average_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
         weak_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
-        //strong_mutation(N,len,offspring,mutation,mutation_fitness,bestIndex);
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < len; j++) {
@@ -364,16 +324,14 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
             cout << endl;
         }
 
-        // Вывод лучшего индивида
         cout << "Лучший индивид: ";
         for (int j = 0; j < len; j++) {
             cout << mutation[bestIndex][j] << " ";
         }
         cout << "\t" << mutation_fitness[bestIndex] << endl;
 
-        create_new_population(N, len, population,mutation, fitness, best_index);
+        create_new_population(N, len, population, mutation, fitness, best_index);
 
-        // Освобождение памяти
         for (int i = 0; i < N; i++) {
             delete[] selection[i];
             delete[] offspring[i];
@@ -382,6 +340,7 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
         delete[] selection;
         delete[] offspring;
         delete[] mutation;
+        delete[] mutation_fitness;
         epoch_count++;
     }
 }
@@ -389,20 +348,20 @@ void Population(int N, int len, int**& population, int*& fitness, int& best_inde
 int main() {
     SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);
-    int N = 5;    // Количество индивидов
-    int len = 8;  // Длина генома
-    int tournir = 2; // Размер турнира
+    int N = 5;
+    int len = 8;
+    int tournir = 2;
     if (N <= tournir) {
         cout << "Ошибка размера турнира!"<< endl;
+        return 1;
     }
-    srand(time(0));
+
     int** population = new int*[N];
-    int* fitness = new int[N](); // Массив для хранения суммы строк (функция пригодности)
-    int best_index = 0; // Индекс лучшего индивида
+    int* fitness = new int[N]();
+    int best_index = 0;
 
     create_population(N, len, population, fitness, best_index);
 
-    // Вывод массива с суммами строк
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < len; j++) {
             cout << population[i][j] << " ";
@@ -411,7 +370,6 @@ int main() {
         cout << endl;
     }
 
-    // Вывод лучшего индивида
     cout << "Лучший индивид: ";
     for (int j = 0; j < len; j++) {
         cout << population[best_index][j] << " ";
@@ -422,9 +380,9 @@ int main() {
 
     for (int i = 0; i < N; i++) {
         delete[] population[i];
-        }
-        delete[] population;
-        delete[] fitness;
+    }
+    delete[] population;
+    delete[] fitness;
 
     return 0;
 }
